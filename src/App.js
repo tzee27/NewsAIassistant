@@ -4,7 +4,7 @@ import Navigation from './components/Navigation';
 import DashboardPage from './pages/DashboardPage';
 import SubmitPage from './pages/SubmitPage';
 import NotificationCenter from './components/NotificationCenter';
-import { listRecent, verifyContent } from './Api';
+import { listRecent, verifyContent } from './api';
 import { DarkModeProvider } from './contexts/DarkModeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 
