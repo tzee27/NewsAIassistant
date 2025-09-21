@@ -1,0 +1,13 @@
+# Core dependencies for AWS Lambda Twitter Scraper
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# Required for Twitter/X scraping (JavaScript-heavy sites)
+selenium>=4.15.0
+
+# Optional: For async HTTP requests
+# httpx>=0.25.0
+
+# Optional: For better performance
+urllib3>=2.0.0
