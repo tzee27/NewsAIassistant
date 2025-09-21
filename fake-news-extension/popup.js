@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', function () {
     const scrapeBtn = document.getElementById('scrapeBtn');
     const loading = document.getElementById('loading');
-    const resultContainer = document.getElementById('resultContainer');
-    const resultTitle = document.getElementById('resultTitle');
-    const resultContent = document.getElementById('resultContent');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
 
     scrapeBtn.addEventListener('click', async function () {
         try {
@@ -17,8 +17,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Show loading state
             scrapeBtn.disabled = true;
-            loading.style.display = 'block';
-            resultContainer.style.display = 'none';
+            loading.style.display = 'none';
+            progressContainer.style.display = 'block';
+
+            // Start progress animation
+            updateProgress(0, 'Initializing...');
+
+            // Simulate progress steps
+            setTimeout(() => updateProgress(20, 'Extracting content...'), 300);
+            setTimeout(() => updateProgress(40, 'Analyzing text...'), 600);
+            setTimeout(() => updateProgress(60, 'Checking sources...'), 900);
+            setTimeout(() => updateProgress(80, 'Running AI analysis...'), 1200);
 
             // Make API call
             const response = await fetch('https://u4wnt31ti1.execute-api.ap-southeast-5.amazonaws.com/test/scrape', {
@@ -37,28 +46,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const data = await response.json();
 
-            // Display result
-            showResult('Success!', JSON.stringify(data, null, 2), 'success');
+            // Complete progress
+            updateProgress(100, 'Analysis complete!');
+
+            // Log results to console
+            console.log('Fake news analysis completed:', data);
 
         } catch (error) {
             console.error('Error scraping website:', error);
-            showError(`Error: ${error.message}`);
         } finally {
             // Hide loading state
             scrapeBtn.disabled = false;
             loading.style.display = 'none';
+            progressContainer.style.display = 'none';
         }
     });
 
-    function showResult(title, content, type) {
-        resultTitle.textContent = title;
-        resultTitle.className = `result-title ${type}`;
-        resultContent.textContent = content;
-        resultContent.className = `result-content ${type}`;
-        resultContainer.style.display = 'block';
-    }
 
-    function showError(message) {
-        showResult('Error', message, 'error');
+    function updateProgress(percentage, text) {
+        progressFill.style.width = percentage + '%';
+        progressText.textContent = text;
     }
 });

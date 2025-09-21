@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Website Scraper",
+    "name": "News AI Assistant",
     "version": "1.0",
     "description": "A Chrome extension to scrape website content using API",
     "permissions": [
@@ -12,6 +12,6 @@
     ],
     "action": {
         "default_popup": "popup.html",
-        "default_title": "Scrape Website"
+        "default_title": "News AI Assistant"
     }
 }
