@@ -1,0 +1,17 @@
+{
+    "manifest_version": 3,
+    "name": "Website Scraper",
+    "version": "1.0",
+    "description": "A Chrome extension to scrape website content using API",
+    "permissions": [
+        "activeTab",
+        "scripting"
+    ],
+    "host_permissions": [
+        "https://u4wnt31ti1.execute-api.ap-southeast-5.amazonaws.com/*"
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "Scrape Website"
+    }
+}
