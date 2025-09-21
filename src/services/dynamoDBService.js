@@ -115,7 +115,10 @@ export const dynamoDBService = {
         };
       }) || [];
 
-      return transformedData;
+      // Reverse the array to show latest items first (since DB has no time record)
+      const reversedData = transformedData.reverse();
+
+      return reversedData;
     } catch (error) {
       console.error('Error fetching data from DynamoDB:', error);
       throw error;
