@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const TelegramBoard = () => {
   const [messages, setMessages] = useState([
@@ -49,9 +49,6 @@ const TelegramBoard = () => {
     }
   };
 
-  const joinTelegram = () => {
-    window.open('https://t.me/newsai_assistant', '_blank');
-  };
 
   return (
     <div className="telegram-board">

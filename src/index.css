@@ -107,12 +107,18 @@ code {
 }
 
 .badge {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
+  min-width: 80px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
 
 .badge-real {
@@ -213,6 +219,7 @@ code {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 12px;
+  gap: 16px;
 }
 
 .news-title {
