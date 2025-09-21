@@ -2,13 +2,9 @@
 
 Verify posts, links, images, and videos as **Real**, **Fake**, or **Unverified** with transparent evidence and a confidence score.
 
-![Architecture](<img width="723" height="401" alt="Screenshot 2025-09-21 194507" src="https://github.com/user-attachments/assets/bb062818-ada9-476f-9a1e-e04abee5e3cc" />
-)
-) <!-- upload your diagram to docs/architecture.png -->
-
 ## ✨ Features
 - Submit **URL / text / image / video** for verification
-- Verdict: **Real / Fake / Unverified** + **confidence score (0–1)**
+- Verdict: **Real / Fake / Unverified** + **confidence score (0–10)**
 - **Evidence list** with source names, snippets, and links
 - **Dashboard** with counts & filters; collective record of all verifications
 - Multilingual input (optional: Comprehend + Translate)
