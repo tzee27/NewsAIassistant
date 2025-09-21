@@ -4,7 +4,7 @@ Verify posts, links, images, and videos as **Real**, **Fake**, or **Unverified**
 
 ## ✨ Features
 - Submit **URL / text / image / video** for verification
-- Verdict: **Real / Fake / Unverified** + **confidence score (0–1)**
+- Verdict: **Real / Fake / Unverified** + **confidence score (0–10)**
 - **Evidence list** with source names, snippets, and links
 - **Dashboard** with counts & filters; collective record of all verifications
 - Multilingual input (optional: Comprehend + Translate)
