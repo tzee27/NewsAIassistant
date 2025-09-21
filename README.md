@@ -2,7 +2,8 @@
 
 Verify posts, links, images, and videos as **Real**, **Fake**, or **Unverified** with transparent evidence and a confidence score.
 
-![Architecture](docs/architecture.png) <!-- upload your diagram to docs/architecture.png -->
+![Architecture](<img width="723" height="401" alt="Screenshot 2025-09-21 194507" src="https://github.com/user-attachments/assets/af61144d-4f60-47ea-be60-4d0187563032" />)
+) <!-- upload your diagram to docs/architecture.png -->
 
 ## ✨ Features
 - Submit **URL / text / image / video** for verification
@@ -37,5 +38,3 @@ Verify posts, links, images, and videos as **Real**, **Fake**, or **Unverified**
 
 > Region: **us-east-1** (all resources aligned).  
 > Current model access: **meta.llama3-1-70b-instruct-v1:0** or **mistral.mistral-large-2402-v1:0**.
-
-## 🗂️ Repo Structure
