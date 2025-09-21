@@ -9,6 +9,7 @@ import time
 import re
 import boto3
 import os
+import requests
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from selenium import webdriver
@@ -25,6 +26,7 @@ class LambdaWebScraper:
         self.driver = None
         self.dynamodb = boto3.resource('dynamodb')
         self.table_name = os.environ.get('DYNAMODB_TABLE_NAME', 'twitter-scraped-data')
+        self.verification_webhook_url = os.environ.get('VERIFICATION_WEBHOOK_URL', 'https://n8n-staging.ai-spacex.co/webhook/1f21eafb-d9eb-438c-a239-5fe4c9676078')
         
     def __enter__(self):
         """Context manager entry"""
@@ -35,8 +37,8 @@ class LambdaWebScraper:
         if self.driver:
             self.driver.quit()
     
-    def save_to_dynamodb(self, data: Dict[str, Any], url: str) -> str:
-        """Save response data to DynamoDB"""
+    def save_to_dynamodb(self, data: Dict[str, Any], url: str, verification_data: Dict[str, Any] = None) -> str:
+        """Save response data to DynamoDB including verification results"""
         try:
             # Extract tweet ID from URL
             tweet_id = self._extract_tweet_id(url)
@@ -59,6 +61,24 @@ class LambdaWebScraper:
                 'lambda_ready': data.get('lambda_ready', False)
             }
             
+            # Add verification data if provided
+            if verification_data:
+                item['verification_success'] = verification_data.get('verification_success', False)
+                item['verification_response'] = verification_data.get('verification_response', {})
+                item['verification_status_code'] = verification_data.get('verification_status_code', 0)
+                item['verified_at'] = time.strftime('%Y-%m-%d %H:%M:%S')
+                
+                # Add structured verification data
+                structured_verification = verification_data.get('structured_verification', {})
+                if structured_verification:
+                    item['structured_verification'] = structured_verification
+                
+                # If verification_response is a dict, merge its contents into the main item
+                if isinstance(item['verification_response'], dict):
+                    for key, value in item['verification_response'].items():
+                        if key not in item:  # Don't overwrite existing fields
+                            item[f'verified_{key}'] = value
+            
             # Save to DynamoDB
             table = self.dynamodb.Table(self.table_name)
             table.put_item(Item=item)
@@ -70,6 +90,161 @@ class LambdaWebScraper:
             print(f"Error saving to DynamoDB: {str(e)}")
             return None
     
+    def parse_verification_response(self, verification_result: Dict[str, Any]) -> Dict[str, Any]:
+        """Parse verification response into structured claims format"""
+        try:
+            # Extract the output text from the verification response
+            output_text = verification_result.get('output', '')
+            
+            # Parse the structured format from the text
+            claims = []
+            
+            # Split by claim sections
+            claim_sections = output_text.split('- Claim:')
+            
+            for section in claim_sections[1:]:  # Skip the first empty section
+                lines = section.strip().split('\n')
+                
+                if not lines:
+                    continue
+                    
+                # Extract claim
+                claim = lines[0].strip()
+                
+                # Initialize claim data
+                claim_data = {
+                    "claim": claim,
+                    "status": "UNKNOWN",
+                    "confidence": 0,
+                    "summary": "",
+                    "sources": []
+                }
+                
+                # Parse other fields
+                for line in lines[1:]:
+                    line = line.strip()
+                    if line.startswith('- Status:'):
+                        claim_data["status"] = line.replace('- Status:', '').strip()
+                    elif line.startswith('- Confidence:'):
+                        try:
+                            claim_data["confidence"] = int(line.replace('- Confidence:', '').strip())
+                        except ValueError:
+                            claim_data["confidence"] = 0
+                    elif line.startswith('- Summary:'):
+                        claim_data["summary"] = line.replace('- Summary:', '').strip()
+                    elif line.startswith('- Sources:'):
+                        # Extract sources from the rest of the text
+                        sources_text = '\n'.join(lines[lines.index(line):])
+                        sources = self.extract_sources_from_text(sources_text)
+                        claim_data["sources"] = sources
+                
+                claims.append(claim_data)
+            
+            return {"claims": claims}
+            
+        except Exception as e:
+            print(f"Error parsing verification response: {e}")
+            return {"claims": []}
+    
+    def extract_sources_from_text(self, sources_text: str) -> List[str]:
+        """Extract source names from the sources text"""
+        sources = []
+        try:
+            # Look for source names in brackets or links
+            import re
+            
+            # Pattern to match source names in brackets like [Source Name]
+            bracket_pattern = r'\[([^\]]+)\]'
+            bracket_matches = re.findall(bracket_pattern, sources_text)
+            
+            for match in bracket_matches:
+                # Skip if it's a link (contains http)
+                if 'http' not in match.lower():
+                    sources.append(match)
+            
+            # If no bracket sources found, try to extract from links
+            if not sources:
+                # Pattern to match markdown links like [Source](url)
+                link_pattern = r'\[([^\]]+)\]\([^)]+\)'
+                link_matches = re.findall(link_pattern, sources_text)
+                sources.extend(link_matches)
+            
+            # Remove duplicates and return
+            return list(set(sources))
+            
+        except Exception as e:
+            print(f"Error extracting sources: {e}")
+            return []
+    
+    def verify_content(self, scraped_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Send scraped data to verification API and return verification response"""
+        try:
+            print(f"Sending data to verification API: {self.verification_webhook_url}")
+            
+            # Prepare the payload for verification API
+            verification_payload = {
+                "author": scraped_data.get('author', ''),
+                "images": scraped_data.get('images', []),
+                "links": scraped_data.get('links', []),
+                "main_text": scraped_data.get('main_text', ''),
+                "metrics": scraped_data.get('metrics', {}),
+                "page_title": scraped_data.get('page_title', ''),
+                "page_type": scraped_data.get('page_type', ''),
+                "paragraphs": scraped_data.get('paragraphs', []),
+                "timestamp": scraped_data.get('timestamp', ''),
+                "url": scraped_data.get('url', ''),
+                "scraping_method": scraped_data.get('scraping_method', ''),
+                "scraped_at": scraped_data.get('scraped_at', ''),
+                "lambda_ready": scraped_data.get('lambda_ready', False),
+                "dynamodb_id": scraped_data.get('dynamodb_id', ''),
+                "saved_to_dynamodb": scraped_data.get('saved_to_dynamodb', False)
+            }
+            
+            print(f"Payload being sent: {json.dumps(verification_payload, indent=2)}")
+            
+            # Send POST request to verification API
+            response = requests.post(
+                self.verification_webhook_url,
+                json=verification_payload,
+                headers={'Content-Type': 'application/json'},
+                timeout=120  # Increased to 2 minutes
+            )
+            
+            if response.status_code == 200:
+                try:
+                    verification_result = response.json()
+                    print(f"Verification API response: {verification_result}")
+                    
+                    # Parse the structured verification data
+                    structured_verification = self.parse_verification_response(verification_result)
+                    
+                except json.JSONDecodeError as e:
+                    print(f"Failed to parse JSON response: {e}")
+                    print(f"Raw response text: {response.text}")
+                    verification_result = {"error": "Invalid JSON response", "raw_response": response.text}
+                    structured_verification = {"claims": []}
+                
+                return {
+                    "verification_success": True,
+                    "verification_response": verification_result,
+                    "verification_status_code": response.status_code,
+                    "structured_verification": structured_verification
+                }
+            else:
+                print(f"Verification API failed with status {response.status_code}: {response.text}")
+                return {
+                    "verification_success": False,
+                    "verification_response": response.text,
+                    "verification_status_code": response.status_code
+                }
+                
+        except Exception as e:
+            print(f"Error calling verification API: {str(e)}")
+            return {
+                "verification_success": False,
+                "verification_response": str(e),
+                "verification_status_code": 0
+            }
     
     def _extract_tweet_id(self, url: str) -> str:
         """Extract tweet ID from Twitter URL"""
@@ -242,10 +417,17 @@ class LambdaWebScraper:
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
             )
             
-            # Reduced wait for dynamic content
-            time.sleep(3)
+            # Wait for dynamic content to load
+            time.sleep(5)
+            
+            # Try scrolling to trigger lazy loading
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(2)
+            self.driver.execute_script("window.scrollTo(0, 0);")
+            time.sleep(2)
             
             # Check if we're on a login/signup page
+
             page_source = self.driver.page_source.lower()
             if 'sign up' in page_source or 'log in' in page_source or 'create account' in page_source:
                 print("Detected login/signup page, trying to wait longer...")
@@ -259,6 +441,27 @@ class LambdaWebScraper:
             
             # Extract data using JavaScript
             data = self.driver.execute_script("""
+                // Debug: Log page structure for troubleshooting
+                console.log('Page title:', document.title);
+                console.log('Page URL:', window.location.href);
+                console.log('Body content length:', document.body.textContent.length);
+                
+                // Check for common content containers
+                const contentContainers = [
+                    '.article-page-content',
+                    '[itemprop="articleBody"]',
+                    '.article-content',
+                    '.content',
+                    'main',
+                    'article'
+                ];
+                
+                for (const selector of contentContainers) {
+                    const element = document.querySelector(selector);
+                    if (element) {
+                        console.log('Found container:', selector, 'with text length:', element.textContent.length);
+                    }
+                }
                 const safe_extract = (selector) => {
                     try {
                         const element = document.querySelector(selector);
@@ -302,7 +505,13 @@ class LambdaWebScraper:
                             '.article-content img',       // News article images
                             '.content img',               // General content images
                             'main img',                   // Main content images
-                            'figure img'                  // Figure images
+                            'figure img',                 // Figure images
+                            '.article-page-content img',  // Sin Chew Daily article images
+                            '[itemprop="articleBody"] img', // Article body images
+                            '.article-text img',          // Article text images
+                            '.news-article img',          // News article images
+                            '.story img',                 // Story images
+                            '.post img'                   // Post images
                         ];
                         
                         for (const selector of selectors) {
@@ -339,7 +548,14 @@ class LambdaWebScraper:
                             'div[lang]',                  // General lang divs
                             '.article-body p',            // Article body paragraphs
                             '.news-content p',            // News content paragraphs
-                            '.text-content p'             // Text content paragraphs
+                            '.text-content p',            // Text content paragraphs
+                            '.article-page-content p',    // Sin Chew Daily article content
+                            '[itemprop="articleBody"] p', // Article body with itemprop
+                            '#article-page-content p',    // Article content by ID
+                            '.article-text p',            // Article text paragraphs
+                            '.news-article p',            // News article paragraphs
+                            '.story p',                   // Story paragraphs
+                            '.post p'                     // Post paragraphs
                         ];
                         
                         for (const selector of paragraphSelectors) {
@@ -520,7 +736,7 @@ class LambdaWebScraper:
             data['scraped_at'] = time.strftime('%Y-%m-%d %H:%M:%S')
             data['lambda_ready'] = True
             
-            # Save to DynamoDB (primary storage for website)
+            # Step 1: Save scraped data to DynamoDB first (ensures data is never lost)
             dynamodb_id = self.save_to_dynamodb(data, url)
             if dynamodb_id:
                 data['dynamodb_id'] = dynamodb_id
@@ -528,8 +744,22 @@ class LambdaWebScraper:
             else:
                 data['saved_to_dynamodb'] = False
             
+            # Step 2: Send scraped data to verification API
+            verification_result = self.verify_content(data)
             
-            return data
+            # Step 3: Combine scraped data with verification result
+            combined_data = data.copy()
+            combined_data['verification_result'] = verification_result
+            
+            # Step 4: Update DynamoDB with verification results
+            if dynamodb_id:
+                updated_dynamodb_id = self.save_to_dynamodb(combined_data, url, verification_result)
+                if updated_dynamodb_id:
+                    combined_data['verification_saved_to_dynamodb'] = True
+                else:
+                    combined_data['verification_saved_to_dynamodb'] = False
+            
+            return combined_data
             
         except Exception as e:
             return {"error": str(e), "url": url, "scraping_method": "selenium_webdriver"}
