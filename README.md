@@ -2,8 +2,6 @@
 
 Verify posts, links, images, and videos as **Real**, **Fake**, or **Unverified** with transparent evidence and a confidence score.
 
-![Architecture](/docs/architecture.png)
-
 ## ✨ Features
 - Submit **URL / text / image / video** for verification
 - Verdict: **Real / Fake / Unverified** + **confidence score (0–1)**
