@@ -1,0 +1,16 @@
+{
+  "name": "newsai-backend",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.634.0",
+    "@aws-sdk/client-comprehend": "^3.634.0",
+    "@aws-sdk/client-dynamodb": "^3.634.0",
+    "@opensearch-project/opensearch": "^2.11.0",
+    "uuid": "^9.0.1"
+  },
+  "scripts": {
+    "zip": "zip -r function.zip . -x \"node_modules/*\""
+  }
+}
