@@ -5,8 +5,8 @@ const Navigation = ({ activePage, setActivePage }) => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   
   const pages = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'submit', label: 'Submit Content', icon: '📝' },
+    { id: 'dashboard', label: 'Dashboard', icon: '▣' },
+    { id: 'submit', label: 'Submit Content', icon: '✎' },
   ];
 
   return (
@@ -14,7 +14,8 @@ const Navigation = ({ activePage, setActivePage }) => {
       <div className="container">
         <div className="nav-content">
           <div className="nav-logo">
-            🔍 Fake News Checker
+            <span className="logo-icon">■</span>
+            NewsAI Assistant
           </div>
           <div className="nav-actions">
             <div className="nav-tabs">
@@ -34,7 +35,7 @@ const Navigation = ({ activePage, setActivePage }) => {
               onClick={toggleDarkMode}
               title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              {isDarkMode ? '☀️' : '🌙'}
+              {isDarkMode ? '○' : '●'}
             </button>
           </div>
         </div>
