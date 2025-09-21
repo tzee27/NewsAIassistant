@@ -59,13 +59,10 @@ const TelegramBoard = () => {
         <div className="telegram-title">
           <span className="telegram-icon">■</span>
           <div>
-            <h3>Community Board</h3>
-            <p>2,847 active members</p>
+            <h3>Live Discussion</h3>
+            <p>Community chat board</p>
           </div>
         </div>
-        <button className="btn btn-outline telegram-join-btn" onClick={joinTelegram}>
-          Join Channel
-        </button>
       </div>
 
       <div className="telegram-messages">

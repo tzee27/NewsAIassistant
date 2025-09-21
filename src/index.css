@@ -1287,6 +1287,113 @@ code {
   color: #adb5bd;
 }
 
+/* Telegram Card */
+.telegram-card {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
+  border-left: 4px solid #495057;
+}
+
+.telegram-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.dark-mode .telegram-card {
+  background: #2d3339;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid #495057;
+  border-left: 4px solid #adb5bd;
+}
+
+.telegram-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.telegram-card-icon {
+  font-size: 24px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  color: #495057;
+}
+
+.dark-mode .telegram-card-icon {
+  background: #495057;
+  border: 1px solid #6c757d;
+  color: #f8f9fa;
+}
+
+.telegram-card-info h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 4px;
+  transition: color 0.3s ease;
+  font-family: 'Source Serif Pro', serif;
+}
+
+.telegram-card-info p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+.dark-mode .telegram-card-info h3 {
+  color: #f8f9fa;
+}
+
+.dark-mode .telegram-card-info p {
+  color: #adb5bd;
+}
+
+.telegram-features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.telegram-actions {
+  text-align: center;
+}
+
+.telegram-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.telegram-btn:hover {
+  transform: translateY(-1px);
+}
+
+.telegram-note {
+  color: #6c757d;
+  font-size: 12px;
+  transition: color 0.3s ease;
+}
+
+.dark-mode .telegram-note {
+  color: #adb5bd;
+}
+
 /* Community Board */
 .telegram-board {
   background: #ffffff;
@@ -1739,12 +1846,13 @@ code {
   }
   
   .extension-card,
+  .telegram-card,
   .telegram-board {
     margin-bottom: 20px;
   }
   
   .telegram-board {
-    height: 400px;
+    height: 350px;
   }
   
   .extension-features {

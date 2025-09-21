@@ -2,6 +2,7 @@ import React from 'react';
 import NewsTabs from '../components/NewsTabs';
 import NewsGrid from '../components/NewsGrid';
 import ChromeExtensionCard from '../components/ChromeExtensionCard';
+import TelegramCard from '../components/TelegramCard';
 import TelegramBoard from '../components/TelegramBoard';
 
 const DashboardPage = ({ newsData, activeTab, setActiveTab, stats }) => {
@@ -62,6 +63,7 @@ const DashboardPage = ({ newsData, activeTab, setActiveTab, stats }) => {
             
             <div className="dashboard-sidebar">
               <ChromeExtensionCard />
+              <TelegramCard />
               <TelegramBoard />
             </div>
           </div>
