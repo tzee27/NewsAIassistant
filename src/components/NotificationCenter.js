@@ -36,7 +36,6 @@ const NotificationCenter = () => {
   return (
     <div className="notification-center">
       <div className="notification-header">
-        <h3>Notifications</h3>
         <button 
           onClick={clearAllNotifications}
           className="clear-all-btn"

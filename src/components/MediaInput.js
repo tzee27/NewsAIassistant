@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNotifications } from '../contexts/NotificationContext';
+import { s3Service } from '../services/s3Service';
 
 const MediaInput = ({ onNewSubmission }) => {
   const [inputValue, setInputValue] = useState('');
@@ -24,9 +25,6 @@ const MediaInput = ({ onNewSubmission }) => {
     });
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
       // Determine if it's a URL, image, or video
       const submission = {
         id: Date.now(),
@@ -40,20 +38,25 @@ const MediaInput = ({ onNewSubmission }) => {
         scrapedAt: new Date().toISOString()
       };
 
+      // Upload to S3
+      await s3Service.uploadSubmission(submission);
+
+      // Also add to local state for immediate display
       onNewSubmission(submission);
       
       addNotification({
         type: 'success',
         title: 'Submission Received!',
-        message: 'Your content has been added to the verification queue.'
+        message: 'Your content has been uploaded to S3 and added to the verification queue.'
       });
 
       setInputValue('');
     } catch (error) {
+      console.error('Submission error:', error);
       addNotification({
         type: 'error',
         title: 'Submission Failed',
-        message: 'There was an error processing your submission. Please try again.'
+        message: `There was an error processing your submission: ${error.message}`
       });
     } finally {
       setIsProcessing(false);

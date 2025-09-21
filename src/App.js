@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage';
 import SubmitPage from './pages/SubmitPage';
 import NotificationCenter from './components/NotificationCenter';
 import { mockNewsData } from './data/mockData';
+import { dynamoDBService } from './services/dynamoDBService';
 import { DarkModeProvider } from './contexts/DarkModeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 
@@ -14,8 +15,23 @@ function App() {
   const [activePage, setActivePage] = useState('dashboard');
 
   useEffect(() => {
-    // Simulate loading data
-    setNewsData(mockNewsData);
+    // Load data from DynamoDB
+    const loadData = async () => {
+      try {
+        const data = await dynamoDBService.getData();
+        
+        if (data && data.length > 0) {
+          setNewsData(data);
+        } else {
+          setNewsData(mockNewsData);
+        }
+      } catch (error) {
+        console.error('Error loading data from DynamoDB:', error);
+        setNewsData(mockNewsData);
+      }
+    };
+
+    loadData();
   }, []);
 
   const filteredNews = newsData.filter(item => {
@@ -28,8 +44,6 @@ function App() {
 
   const handleNewSubmission = (submission) => {
     setNewsData(prev => [submission, ...prev]);
-    // Switch to dashboard after successful submission
-    setActivePage('dashboard');
   };
 
   const stats = {
