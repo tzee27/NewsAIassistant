@@ -41,6 +41,7 @@ With the request body:
 ```json
 {
   "url": "CURRENT_PAGE_URL"
+  
 }
 ```
 
